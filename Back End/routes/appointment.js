@@ -9,4 +9,7 @@ router.put('/cancel/:id', authenticate, appointmentController.cancelAppointment)
 // routes/appointment.js
 router.get('/my', authenticate, appointmentController.getAppointmentsMyself);
 
+router.put('/reschedule/:id', authenticate, appointmentController.rescheduleAppointment);
+
+
 module.exports = router;

@@ -116,4 +116,32 @@ exports.getAppointmentsMyself = async (req, res) => {
   }
 };
 
+exports.rescheduleAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newSlotId } = req.body;
 
+    const appointment = await Appointment.findByPk(id);
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    // Check if new slot exists and is not booked
+    const slot = await ServiceAvailability.findByPk(newSlotId);
+    if (!slot) {
+      return res.status(404).json({ message: 'Slot not found' });
+    }
+    const existing = await Appointment.findOne({ where: { slotId: newSlotId, status: 'booked' } });
+    if (existing) {
+      return res.status(400).json({ message: 'This slot is already booked' });
+    }
+
+    appointment.slotId = newSlotId;
+    appointment.status = 'booked';
+    await appointment.save();
+
+    return res.status(200).json({ message: 'Appointment rescheduled successfully', appointment });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
