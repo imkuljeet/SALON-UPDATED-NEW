@@ -8,16 +8,16 @@ form.addEventListener("submit", async function (e) {
     email: e.target.email.value,
     phone: e.target.phone.value,
     password: e.target.password.value,
+    role: e.target.role.value
   };
 
   try {
     const response = await axios.post("http://localhost:3000/user/signup", data);
-
-    alert(response.data.message); // show backend success message
+    alert(response.data.message);
     window.location.href = "login.html";
   } catch (error) {
     if (error.response) {
-      alert(error.response.data.message); // show backend error message
+      alert(error.response.data.message);
     } else {
       alert("Network error: " + error.message);
     }

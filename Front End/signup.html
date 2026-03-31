@@ -20,6 +20,12 @@
     <label for="password">Password:</label><br>
     <input type="password" id="password" name="password" required><br><br>
 
+    <label for="role">Role:</label><br>
+    <select id="role" name="role" required>
+      <option value="customer">Customer</option>
+      <option value="admin">Admin</option>
+    </select><br><br>
+
     <button type="submit">Sign Up</button>
   </form>
 
@@ -27,6 +33,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="signup.js"></script>
-  
 </body>
 </html>
