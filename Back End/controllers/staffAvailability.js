@@ -1,39 +1,46 @@
-const StaffAvailability = require('../models/StaffAvailability;');
-const ServiceAvailability = require('../models/ServiceAvailability');
-const Staff = require('../models/Staff');
-const Service = require('../models/Service');
+const StaffAvailability = require("../models/StaffAvailability;");
+const ServiceAvailability = require("../models/ServiceAvailability");
+const Staff = require("../models/Staff");
+const Service = require("../models/Service");
 
 // Add availability
 exports.addAvailability = async (req, res) => {
   try {
     const { staffId, dayOfWeek, startTime, endTime } = req.body;
     if (!staffId || !dayOfWeek || !startTime || !endTime) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
     // Create staff availability
     const staffAvailability = await StaffAvailability.create({
-      staffId, dayOfWeek, startTime, endTime
+      staffId,
+      dayOfWeek,
+      startTime,
+      endTime,
     });
 
-    // Find staff specialization
+    // In staffAvailabilityController addAvailability
     const staff = await Staff.findByPk(staffId);
     if (staff) {
-      // Find matching service by specialization
-      const service = await Service.findOne({ where: { name: staff.specialization } });
+      const service = await Service.findOne({
+        where: { name: staff.specialization },
+      });
       if (service) {
         await ServiceAvailability.create({
           serviceId: service.id,
+          staffId: staff.id, // link staff directly
           dayOfWeek,
           startTime,
-          endTime
+          endTime,
         });
       }
     }
 
-    return res.status(201).json({ message: 'Availability added successfully' });
+    return res.status(201).json({ message: "Availability added successfully" });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: err.message });
   }
 };
 
@@ -41,10 +48,14 @@ exports.addAvailability = async (req, res) => {
 exports.getAvailability = async (req, res) => {
   try {
     const { staffId } = req.params;
-    const availability = await StaffAvailability.findAll({ where: { staffId } });
+    const availability = await StaffAvailability.findAll({
+      where: { staffId },
+    });
     return res.status(200).json({ availability });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: err.message });
   }
 };
 
@@ -54,11 +65,15 @@ exports.deleteAvailability = async (req, res) => {
     const { id } = req.params;
     const availability = await StaffAvailability.findByPk(id);
     if (!availability) {
-      return res.status(404).json({ message: 'Availability not found' });
+      return res.status(404).json({ message: "Availability not found" });
     }
     await availability.destroy();
-    return res.status(200).json({ message: 'Availability deleted successfully' });
+    return res
+      .status(200)
+      .json({ message: "Availability deleted successfully" });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: err.message });
   }
 };

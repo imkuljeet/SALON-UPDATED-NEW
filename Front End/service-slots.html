@@ -1,106 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Service Slots</title>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  </head>
-  <body>
-    <h1>Service Slots</h1>
-    <p>View all service availability below.</p>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Service Slots</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <h1>Service Slots</h1>
+  <p>View all service availability below.</p>
 
-    <button onclick="window.location.href='admin-dashboard.html'">
-      Back to Dashboard
-    </button>
+  <button onclick="window.location.href='admin-dashboard.html'">
+    Back to Dashboard
+  </button>
 
-    <!-- Service Availability Section -->
-    <div
-      id="serviceAvailabilitySection"
-      style="display: none; margin-top: 20px"
-    >
-      <h2>Service Availability</h2>
-      <table
-        border="1"
-        cellpadding="8"
-        cellspacing="0"
-        id="serviceAvailabilityTable"
-      >
-        <thead>
-          <tr>
-            <th>Service Name</th>
-            <th>Day</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Staff Available</th>
-          </tr>
-        </thead>
-        <tbody id="serviceAvailabilityList"></tbody>
-      </table>
-    </div>
+  <!-- Service Availability Section -->
+  <div id="serviceAvailabilitySection" style="display:none; margin-top:20px;">
+    <h2>Service Availability</h2>
+    <table border="1" cellpadding="8" cellspacing="0" id="serviceAvailabilityTable">
+      <thead>
+        <tr>
+          <th>Service Name</th>
+          <th>Day</th>
+          <th>Start Time</th>
+          <th>End Time</th>
+          <th>Staff Available</th>
+        </tr>
+      </thead>
+      <tbody id="serviceAvailabilityList"></tbody>
+    </table>
+  </div>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", async () => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          alert("You must be logged in as admin.");
-          window.location.href = "login.html";
-          return;
-        }
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You must be logged in as admin.");
+        window.location.href = "login.html";
+        return;
+      }
 
-        async function loadServiceAvailability() {
-          try {
-            const response = await axios.get(
-              "http://localhost:3000/service/get-services",
-              {
-                headers: { Authorization: token },
-              }
-            );
-            const services = response.data.services;
-            const listBody = document.getElementById("serviceAvailabilityList");
-            const section = document.getElementById(
-              "serviceAvailabilitySection"
+      async function loadServiceAvailability() {
+        try {
+          const response = await axios.get(
+            "http://localhost:3000/service/get-services",
+            { headers: { Authorization: token } }
+          );
+          const services = response.data.services;
+          const listBody = document.getElementById("serviceAvailabilityList");
+          const section = document.getElementById("serviceAvailabilitySection");
+
+          listBody.innerHTML = "";
+          let hasAvailability = false;
+
+          for (const service of services) {
+            const availabilityRes = await axios.get(
+              `http://localhost:3000/service-availability/${service.id}`,
+              { headers: { Authorization: token } }
             );
 
-            listBody.innerHTML = "";
-            let hasAvailability = false;
+            const slots = availabilityRes.data.availability;
 
-            for (const service of services) {
-              const availabilityRes = await axios.get(
-                `http://localhost:3000/service-availability/${service.id}`,
-                { headers: { Authorization: token } }
-              );
-
-              const slots = availabilityRes.data.availability;
-              const staffMembers = availabilityRes.data.staffMembers;
-
-              if (slots && slots.length > 0) {
-                hasAvailability = true;
-                slots.forEach((slot) => {
-                  const row = document.createElement("tr");
-                  row.innerHTML = `
-        <td>${service.name}</td>
-        <td>${slot.dayOfWeek}</td>
-        <td>${slot.startTime}</td>
-        <td>${slot.endTime}</td>
-        <td>${staffMembers.map((s) => s.name).join(", ")}</td>
-      `;
-                  listBody.appendChild(row);
-                });
-              }
+            if (slots && slots.length > 0) {
+              hasAvailability = true;
+              slots.forEach((slot) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                  <td>${service.name}</td>
+                  <td>${slot.dayOfWeek}</td>
+                  <td>${slot.startTime}</td>
+                  <td>${slot.endTime}</td>
+                  <td>${slot.Staff ? slot.Staff.name : '—'}</td>
+                `;
+                listBody.appendChild(row);
+              });
             }
-
-            section.style.display = hasAvailability ? "block" : "none";
-          } catch (error) {
-            alert(
-              "Failed to load service availability: " +
-                (error.response?.data.message || error.message)
-            );
           }
-        }
 
-        loadServiceAvailability();
-      });
-    </script>
-  </body>
+          section.style.display = hasAvailability ? "block" : "none";
+        } catch (error) {
+          alert(
+            "Failed to load service availability: " +
+            (error.response?.data.message || error.message)
+          );
+        }
+      }
+
+      loadServiceAvailability();
+    });
+  </script>
+</body>
 </html>

@@ -28,8 +28,10 @@ exports.getAvailability = async (req, res) => {
       return res.status(404).json({ message: 'Service not found' });
     }
 
-    // Get availability slots for this service
-    const availability = await ServiceAvailability.findAll({ where: { serviceId } });
+    const availability = await ServiceAvailability.findAll({
+      where: { serviceId },
+      include: [{ model: Staff, attributes: ['name'] }]
+    });    
 
     // Find staff with matching specialization
     const staffMembers = await Staff.findAll({ where: { specialization: service.name } });
