@@ -45,8 +45,8 @@ Service.belongsToMany(Staff, { through: "StaffServices" });
 // Start cron jobs
 require('./cronjobs');
 
-sequelize.sync({ alter: true })
-// sequelize.sync()
+// sequelize.sync({ alter: true })
+sequelize.sync()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}`);

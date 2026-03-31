@@ -6,88 +6,23 @@
   <title>Submit Review</title>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    .tile-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-top: 20px;
-    }
-    .tile {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 15px;
-      width: 250px;
-      background-color: #f9f9f9;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
-      cursor: pointer;
-      transition: transform 0.2s ease, background-color 0.2s ease;
-    }
-    .tile:hover {
-      transform: scale(1.05);
-      background-color: #eef;
-    }
-    .tile-title {
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-    .reviewed {
-      opacity: 0.6;
-      cursor: not-allowed;
-      background-color: #f2f2f2;
-    }
-    .reviewed:hover {
-      transform: none;
-      background-color: #f2f2f2;
-    }
-    .form-section {
-      margin-top: 30px;
-      max-width: 500px;
-    }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
-    }
-    select, textarea {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-    button {
-      margin-top: 15px;
-      background-color: #007BFF;
-      color: white;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    .reviews-section {
-      margin-top: 40px;
-    }
-    .review-card {
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 15px;
-      margin-bottom: 15px;
-      background-color: #fafafa;
-    }
-    .review-header {
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-    .stars {
-      color: gold;
-    }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .tile-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; }
+    .tile { border: 1px solid #ccc; border-radius: 8px; padding: 15px; width: 250px; background-color: #f9f9f9; box-shadow: 2px 2px 6px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s ease, background-color 0.2s ease; }
+    .tile:hover { transform: scale(1.05); background-color: #eef; }
+    .tile-title { font-weight: bold; margin-bottom: 8px; }
+    .reviewed { opacity: 0.6; cursor: not-allowed; background-color: #f2f2f2; }
+    .reviewed:hover { transform: none; background-color: #f2f2f2; }
+    .form-section { margin-top: 30px; max-width: 500px; }
+    label { font-weight: bold; display: block; margin-top: 10px; }
+    select, textarea { width: 100%; padding: 8px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc; }
+    button { margin-top: 15px; background-color: #007BFF; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background-color: #0056b3; }
+    .reviews-section { margin-top: 40px; }
+    .review-card { border: 1px solid #ddd; border-radius: 6px; padding: 15px; margin-bottom: 15px; background-color: #fafafa; }
+    .review-header { font-weight: bold; margin-bottom: 5px; }
+    .stars { color: gold; }
+    .review-reply { margin-left: 15px; padding: 8px; border-left: 3px solid #007BFF; background-color: #f0f8ff; border-radius: 4px; margin-top: 5px; }
   </style>
 </head>
 <body>
@@ -138,7 +73,35 @@
 
       let reviewedAppointments = [];
 
-      // Load user's reviews first
+      // Load replies for a review
+      async function loadReplies(reviewId, card) {
+        try {
+          const res = await axios.get(`http://localhost:3000/reviews/reply/${reviewId}`, {
+            headers: { Authorization: token }
+          });
+          const replies = res.data.replies || [];
+          if (replies.length > 0) {
+            const repliesContainer = document.createElement("div");
+            repliesContainer.style.marginTop = "10px";
+            repliesContainer.innerHTML = "<strong>Replies:</strong>";
+            replies.forEach(reply => {
+              const adminName = reply.User ? reply.User.fullname : "Admin";
+              const replyDiv = document.createElement("div");
+              replyDiv.className = "review-reply";
+              replyDiv.innerHTML = `
+                <div><strong>${adminName}:</strong> ${reply.reply}</div>
+                <div style="font-size:12px; color:#888;">${new Date(reply.createdAt).toLocaleDateString()}</div>
+              `;
+              repliesContainer.appendChild(replyDiv);
+            });
+            card.appendChild(repliesContainer);
+          }
+        } catch (err) {
+          console.error("Failed to load replies:", err);
+        }
+      }
+
+      // Load user's reviews
       async function loadReviews() {
         try {
           const res = await axios.get("http://localhost:3000/reviews/my", {
@@ -163,6 +126,10 @@
               <div><em>${r.comment || "No comment"}</em></div>
               <div style="font-size:12px; color:#666;">Reviewed on ${new Date(r.createdAt).toLocaleDateString()}</div>
             `;
+
+            // Fetch replies for this review
+            loadReplies(r.id, card);
+
             list.appendChild(card);
           });
         } catch (err) {
@@ -215,8 +182,8 @@
         }
       }
 
-      // Submit review
-      document.getElementById("reviewForm").addEventListener("submit", async (e) => {
+            // Submit review
+            document.getElementById("reviewForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const reviewData = {
           appointmentId: document.getElementById("appointmentId").value,

@@ -7,5 +7,7 @@ router.post('/create', authMiddleware, reviewController.createReview);
 router.get('/all', authMiddleware, reviewController.getReviews);
 router.get('/my', authMiddleware, reviewController.getMyReviews);
 router.post('/reply', authMiddleware, reviewController.replyToReview);
+router.get('/reply/:reviewId', authMiddleware, reviewController.getReviewReplies);
+
 
 module.exports = router;

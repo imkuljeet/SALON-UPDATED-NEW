@@ -90,3 +90,15 @@ exports.replyToReview = async (req, res) => {
   }
 };
 
+exports.getReviewReplies = async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+    const replies = await ReviewReply.findAll({
+      where: { reviewId },
+      include: [{ model: User, attributes: ['id', 'fullname'] }]
+    });    
+    return res.status(200).json({ replies });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
