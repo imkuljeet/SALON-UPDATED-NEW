@@ -12,6 +12,7 @@
 
   <button id="logoutBtn">Logout</button>
   <button id="toggleFormBtn">Add Service</button>
+  <button id="toggleStaffFormBtn">Add Staff</button>
 
   <h2>Service Listings</h2>
   <table border="1" cellpadding="8" cellspacing="0" id="serviceTable">
@@ -54,6 +55,33 @@
       <button type="submit">Save Service</button>
     </form>
   </div>  
+
+<div id="staffFormContainer" style="display:none; margin-top:20px;">
+  <h2>Add New Staff Member</h2>
+  <form id="staffForm">
+    <label for="staffName">Full Name:</label><br>
+    <input type="text" id="staffName" name="staffName" required><br><br>
+
+    <label for="specialization">Specialization:</label><br>
+    <select id="specialization" name="specialization" required>
+      <option value="">-- Select Specialization --</option>
+      <option value="Hair Stylist">Hair Stylist</option>
+      <option value="Color Specialist">Color Specialist</option>
+      <option value="Beautician">Beautician</option>
+      <option value="Massage Therapist">Massage Therapist</option>
+      <option value="Makeup Artist">Makeup Artist</option>
+      <option value="Nail Technician">Nail Technician</option>
+    </select><br><br>
+
+    <label for="experience">Years of Experience:</label><br>
+    <input type="number" id="experience" name="experience" required><br><br>
+
+    <label for="bio">Profile/Bio:</label><br>
+    <textarea id="bio" name="bio" rows="4" cols="40" required></textarea><br><br>
+
+    <button type="submit">Save Staff Member</button>
+  </form>
+</div>
 
 <script src="admin-dashboard.js"></script>
   

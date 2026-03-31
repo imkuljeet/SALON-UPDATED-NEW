@@ -9,6 +9,7 @@ require('dotenv').config();
 const userRoutes = require('./routes/user');
 const customerRoutes = require('./routes/customer');
 const serviceRoutes = require('./routes/service');
+const staffRoutes = require('./routes/staff');
 
 const app = express();
 const PORT = process.env.PORT;
@@ -19,6 +20,8 @@ app.use(bodyParser.json());
 app.use('/user', userRoutes);
 app.use('/customer',customerRoutes);
 app.use('/service',serviceRoutes);
+app.use('/staff', staffRoutes);
+
 
 // sequelize.sync({ alter: true })
 sequelize.sync()
