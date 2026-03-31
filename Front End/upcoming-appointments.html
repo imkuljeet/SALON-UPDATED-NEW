@@ -13,6 +13,12 @@
       background-color: #f9f9f9;
       box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
     }
+    .cancel-btn {
+      margin-top: 10px; padding: 6px 12px;
+      background-color: #d9534f; color: white;
+      border: none; border-radius: 4px; cursor: pointer;
+    }
+    .cancel-btn:hover { background-color: #c9302c; }
   </style>
 </head>
 <body>
@@ -38,41 +44,58 @@
         return;
       }
 
-      try {
-        // ✅ Correct endpoint for all appointments by userId
-        const response = await axios.get("http://localhost:3000/appointment/my", {
-          headers: { Authorization: token }
-        });
+      async function loadAppointments() {
+        try {
+          // ✅ Correct endpoint for all appointments by userId
+          const response = await axios.get("http://localhost:3000/appointment/my", {
+            headers: { Authorization: token }
+          });
 
-        const appointments = response.data.appointments || [];
-        const detailsDiv = document.getElementById("appointmentDetails");
+          const appointments = response.data.appointments || [];
+          const detailsDiv = document.getElementById("appointmentDetails");
 
-        if (appointments.length === 0) {
-          detailsDiv.innerHTML = "<p>No appointments found.</p>";
-          return;
+          if (appointments.length === 0) {
+            detailsDiv.innerHTML = "<p>No appointments found.</p>";
+            return;
+          }
+
+          detailsDiv.innerHTML = "";
+          appointments.forEach(appt => {
+            const slot = appt.ServiceAvailability || {};
+            const service = slot.Service || {};
+            const staff = slot.Staff || {};
+
+            const card = document.createElement("div");
+            card.className = "appointment-card";
+            card.innerHTML = `
+              <h3>Appointment #${appt.id}</h3>
+              <p><strong>Status:</strong> ${appt.status}</p>
+              <p><strong>Service:</strong> ${service.name || "—"} (₹${service.price || "—"})</p>
+              <p><strong>Staff:</strong> ${staff.name || "Assigned Staff"}</p>
+              <p><strong>Day:</strong> ${slot.dayOfWeek || "—"}</p>
+              <p><strong>Time:</strong> ${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}</p>
+              ${appt.status !== "cancelled" ? `<button class="cancel-btn" onclick="cancelAppointment(${appt.id})">Cancel Appointment</button>` : ""}
+            `;
+            detailsDiv.appendChild(card);
+          });
+        } catch (error) {
+          alert("Failed to load appointments: " + (error.response?.data.message || error.message));
         }
-
-        detailsDiv.innerHTML = "";
-        appointments.forEach(appt => {
-          const slot = appt.ServiceAvailability || {};
-          const service = slot.Service || {};
-          const staff = slot.Staff || {};
-
-          const card = document.createElement("div");
-          card.className = "appointment-card";
-          card.innerHTML = `
-            <h3>Appointment #${appt.id}</h3>
-            <p><strong>Status:</strong> ${appt.status}</p>
-            <p><strong>Service:</strong> ${service.name || "—"} (₹${service.price || "—"})</p>
-            <p><strong>Staff:</strong> ${staff.name || "Assigned Staff"}</p>
-            <p><strong>Day:</strong> ${slot.dayOfWeek || "—"}</p>
-            <p><strong>Time:</strong> ${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}</p>
-          `;
-          detailsDiv.appendChild(card);
-        });
-      } catch (error) {
-        alert("Failed to load appointments: " + (error.response?.data.message || error.message));
       }
+
+      window.cancelAppointment = async function(id) {
+        try {
+          await axios.put(`http://localhost:3000/appointment/cancel/${id}`, {}, {
+            headers: { Authorization: token }
+          });
+          alert("Appointment cancelled successfully.");
+          loadAppointments(); // reload list
+        } catch (error) {
+          alert("Failed to cancel appointment: " + (error.response?.data.message || error.message));
+        }
+      };
+
+      loadAppointments();
     });
   </script>
 </body>
