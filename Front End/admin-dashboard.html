@@ -30,17 +30,30 @@
     <h2>Add New Service</h2>
     <form id="serviceForm">
       <label for="name">Service Name:</label><br>
-      <input type="text" id="name" name="name" required><br><br>
-
+      <select id="name" name="name" required>
+        <option value="">-- Select a Service --</option>
+        <option value="Haircut">Haircut</option>
+        <option value="Hair Coloring">Hair Coloring</option>
+        <option value="Hair Spa">Hair Spa</option>
+        <option value="Facial">Facial</option>
+        <option value="Manicure">Manicure</option>
+        <option value="Pedicure">Pedicure</option>
+        <option value="Waxing">Waxing</option>
+        <option value="Threading">Threading</option>
+        <option value="Massage">Massage</option>
+        <option value="Bridal Makeup">Bridal Makeup</option>
+      </select>
+      <br><br>
+  
       <label for="description">Description:</label><br>
       <textarea id="description" name="description" rows="4" cols="40" required></textarea><br><br>
-
+  
       <label for="price">Price (₹):</label><br>
       <input type="number" id="price" name="price" required><br><br>
-
+  
       <button type="submit">Save Service</button>
     </form>
-  </div>
+  </div>  
 
 <script src="admin-dashboard.js"></script>
   
