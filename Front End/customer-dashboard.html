@@ -61,6 +61,8 @@
       <div class="slot-container" id="availabilityList"></div>
     </div>
 
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
     <script>
       // Helper function to convert "HH:mm:ss" to "hh:mm AM/PM"
       function formatTime(timeString) {
@@ -183,16 +185,41 @@
         // Book appointment
         async function bookAppointment(slotId) {
           try {
-            await axios.post(
-              "http://localhost:3000/appointment/book",
+            const token = localStorage.getItem("token");
+            const { data } = await axios.post(
+              "http://localhost:3000/payment/create-order",
               { slotId },
               { headers: { Authorization: token } }
             );
-            alert("Appointment booked successfully!");
-            loadAvailability(); // reload to update tiles
+
+            const options = {
+              key: data.key_id,
+              order_id: data.order_id,
+              amount: data.amount,
+              name: "Salon Appointment",
+              description: "Pay for your booking",
+              handler: async function (response) {
+                await axios.post(
+                  "http://localhost:3000/payment/update-status",
+                  {
+                    order_id: response.razorpay_order_id,
+                    payment_id: response.razorpay_payment_id,
+                  },
+                  { headers: { Authorization: token } }
+                );
+                alert("🎉 Payment successful! Appointment confirmed.");
+                loadAvailability();
+              },
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.on("payment.failed", function (response) {
+              alert("Payment failed: " + response.error.description);
+            });
+            rzp.open();
           } catch (error) {
             alert(
-              "Failed to book appointment: " +
+              "Failed to initiate payment: " +
                 (error.response?.data.message || error.message)
             );
           }
