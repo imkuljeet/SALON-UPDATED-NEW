@@ -58,6 +58,15 @@
 
     <div id="customerDetails"></div>
 
+    <!-- Reviews Tile -->
+    <div class="slot-tile" id="reviewsTile">
+      <div class="slot-title">Reviews</div>
+      <div class="slot-detail">Share your feedback</div>
+      <div style="margin-top: 10px; text-align: center; color: #007bff">
+        Click to Review
+      </div>
+    </div>
+
     <!-- Service Availability Tiles -->
     <div id="availabilitySection">
       <h2>Available Appointment Slots</h2>
@@ -235,6 +244,10 @@
           localStorage.removeItem("token");
           localStorage.removeItem("role");
           window.location.href = "login.html";
+        });
+
+        document.getElementById("reviewsTile").addEventListener("click", () => {
+          window.location.href = "reviews.html";
         });
       });
     </script>

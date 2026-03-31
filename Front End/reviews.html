@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Submit Review</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .tile-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .tile {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 15px;
+      width: 250px;
+      background-color: #f9f9f9;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    .tile:hover {
+      transform: scale(1.05);
+      background-color: #eef;
+    }
+    .tile-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .form-section {
+      margin-top: 30px;
+      max-width: 500px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 15px;
+      background-color: #007BFF;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Submit Your Review</h1>
+  <p>Select an appointment to review:</p>
+
+  <div class="tile-container" id="appointmentsList"></div>
+
+  <!-- Review Form -->
+  <div class="form-section" id="reviewSection" style="display:none;">
+    <h2>Write Your Review</h2>
+    <form id="reviewForm">
+      <input type="hidden" id="appointmentId"/>
+      <input type="hidden" id="staffId"/>
+      <input type="hidden" id="serviceId"/>
+
+      <label for="rating">Rating</label>
+      <select id="rating" required>
+        <option value="">Select</option>
+        <option value="1">⭐</option>
+        <option value="2">⭐⭐</option>
+        <option value="3">⭐⭐⭐</option>
+        <option value="4">⭐⭐⭐⭐</option>
+        <option value="5">⭐⭐⭐⭐⭐</option>
+      </select>
+
+      <label for="comment">Comments</label>
+      <textarea id="comment" rows="4" placeholder="Write your feedback..."></textarea>
+
+      <button type="submit">Submit Review</button>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Login required");
+        window.location.href = "login.html";
+        return;
+      }
+
+      // Load appointments
+      try {
+        const res = await axios.get("http://localhost:3000/appointment/my", {
+          headers: { Authorization: token }
+        });
+        const appointments = res.data.appointments || [];
+        const list = document.getElementById("appointmentsList");
+
+        // Filter out cancelled appointments
+        const validAppointments = appointments.filter(appt =>
+          appt.status !== "cancelled"
+        );
+
+        validAppointments.forEach(appt => {
+          const slot = appt.ServiceAvailability;
+          const tile = document.createElement("div");
+          tile.className = "tile";
+          tile.innerHTML = `
+            <div class="tile-title">${slot.Service.name}</div>
+            <div><strong>Staff:</strong> ${slot.Staff.name}</div>
+            <div><strong>Day:</strong> ${slot.dayOfWeek}</div>
+            <div><strong>Time:</strong> ${slot.startTime} - ${slot.endTime}</div>
+            <div style="margin-top:10px; text-align:center; color:#007BFF;">
+              Review this appointment
+            </div>
+          `;
+          tile.addEventListener("click", () => {
+            document.getElementById("appointmentId").value = appt.id;
+            document.getElementById("staffId").value = slot.Staff.id;
+            document.getElementById("serviceId").value = slot.Service.id;
+            document.getElementById("reviewSection").style.display = "block";
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+          });
+          list.appendChild(tile);
+        });
+      } catch (err) {
+        alert("Failed to load appointments: " + (err.response?.data.message || err.message));
+      }
+
+      // Submit review
+      document.getElementById("reviewForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const reviewData = {
+          appointmentId: document.getElementById("appointmentId").value,
+          staffId: document.getElementById("staffId").value,
+          serviceId: document.getElementById("serviceId").value,
+          rating: document.getElementById("rating").value,
+          comment: document.getElementById("comment").value
+        };
+        try {
+          await axios.post("http://localhost:3000/reviews/create", reviewData, {
+            headers: { Authorization: token }
+          });
+          alert("✅ Review submitted successfully!");
+          e.target.reset();
+          document.getElementById("reviewSection").style.display = "none";
+        } catch (err) {
+          alert("Error submitting review: " + (err.response?.data.message || err.message));
+        }
+      });
+    });
+  </script>
+</body>
+</html>
