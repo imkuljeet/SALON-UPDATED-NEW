@@ -34,6 +34,15 @@
       font-weight: bold;
       margin-bottom: 8px;
     }
+    .reviewed {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #f2f2f2;
+    }
+    .reviewed:hover {
+      transform: none;
+      background-color: #f2f2f2;
+    }
     .form-section {
       margin-top: 30px;
       max-width: 500px;
@@ -61,6 +70,23 @@
     }
     button:hover {
       background-color: #0056b3;
+    }
+    .reviews-section {
+      margin-top: 40px;
+    }
+    .review-card {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background-color: #fafafa;
+    }
+    .review-header {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .stars {
+      color: gold;
     }
   </style>
 </head>
@@ -95,6 +121,12 @@
     </form>
   </div>
 
+  <!-- Reviews List -->
+  <div class="reviews-section">
+    <h2>My Reviews</h2>
+    <div id="reviewsList"></div>
+  </div>
+
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       const token = localStorage.getItem("token");
@@ -104,43 +136,83 @@
         return;
       }
 
-      // Load appointments
-      try {
-        const res = await axios.get("http://localhost:3000/appointment/my", {
-          headers: { Authorization: token }
-        });
-        const appointments = res.data.appointments || [];
-        const list = document.getElementById("appointmentsList");
+      let reviewedAppointments = [];
 
-        // Filter out cancelled appointments
-        const validAppointments = appointments.filter(appt =>
-          appt.status !== "cancelled"
-        );
-
-        validAppointments.forEach(appt => {
-          const slot = appt.ServiceAvailability;
-          const tile = document.createElement("div");
-          tile.className = "tile";
-          tile.innerHTML = `
-            <div class="tile-title">${slot.Service.name}</div>
-            <div><strong>Staff:</strong> ${slot.Staff.name}</div>
-            <div><strong>Day:</strong> ${slot.dayOfWeek}</div>
-            <div><strong>Time:</strong> ${slot.startTime} - ${slot.endTime}</div>
-            <div style="margin-top:10px; text-align:center; color:#007BFF;">
-              Review this appointment
-            </div>
-          `;
-          tile.addEventListener("click", () => {
-            document.getElementById("appointmentId").value = appt.id;
-            document.getElementById("staffId").value = slot.Staff.id;
-            document.getElementById("serviceId").value = slot.Service.id;
-            document.getElementById("reviewSection").style.display = "block";
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      // Load user's reviews first
+      async function loadReviews() {
+        try {
+          const res = await axios.get("http://localhost:3000/reviews/my", {
+            headers: { Authorization: token }
           });
-          list.appendChild(tile);
-        });
-      } catch (err) {
-        alert("Failed to load appointments: " + (err.response?.data.message || err.message));
+          const reviews = res.data.reviews || [];
+          reviewedAppointments = reviews.map(r => r.appointmentId);
+
+          const list = document.getElementById("reviewsList");
+          list.innerHTML = "";
+
+          reviews.forEach(r => {
+            const stars = "⭐".repeat(r.rating);
+            const serviceName = r.Service ? r.Service.name : "Unknown Service";
+            const staffName = r.Staff ? r.Staff.name : "Unknown Staff";
+
+            const card = document.createElement("div");
+            card.className = "review-card";
+            card.innerHTML = `
+              <div class="review-header">${serviceName} with ${staffName}</div>
+              <div class="stars">${stars}</div>
+              <div><em>${r.comment || "No comment"}</em></div>
+              <div style="font-size:12px; color:#666;">Reviewed on ${new Date(r.createdAt).toLocaleDateString()}</div>
+            `;
+            list.appendChild(card);
+          });
+        } catch (err) {
+          alert("Failed to load reviews: " + (err.response?.data.message || err.message));
+        }
+      }
+
+      // Load appointments
+      async function loadAppointments() {
+        try {
+          const res = await axios.get("http://localhost:3000/appointment/my", {
+            headers: { Authorization: token }
+          });
+          const appointments = res.data.appointments || [];
+          const list = document.getElementById("appointmentsList");
+          list.innerHTML = "";
+
+          const validAppointments = appointments.filter(appt =>
+            appt.status !== "cancelled"
+          );
+
+          validAppointments.forEach(appt => {
+            const slot = appt.ServiceAvailability;
+            const alreadyReviewed = reviewedAppointments.includes(appt.id);
+
+            const tile = document.createElement("div");
+            tile.className = "tile" + (alreadyReviewed ? " reviewed" : "");
+            tile.innerHTML = `
+              <div class="tile-title">${slot.Service.name}</div>
+              <div><strong>Staff:</strong> ${slot.Staff.name}</div>
+              <div><strong>Day:</strong> ${slot.dayOfWeek}</div>
+              <div><strong>Time:</strong> ${slot.startTime} - ${slot.endTime}</div>
+              <div style="margin-top:10px; text-align:center; color:${alreadyReviewed ? "red" : "#007BFF"};">
+                ${alreadyReviewed ? "Already Reviewed" : "Review this appointment"}
+              </div>
+            `;
+            if (!alreadyReviewed) {
+              tile.addEventListener("click", () => {
+                document.getElementById("appointmentId").value = appt.id;
+                document.getElementById("staffId").value = slot.Staff.id;
+                document.getElementById("serviceId").value = slot.Service.id;
+                document.getElementById("reviewSection").style.display = "block";
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+              });
+            }
+            list.appendChild(tile);
+          });
+        } catch (err) {
+          alert("Failed to load appointments: " + (err.response?.data.message || err.message));
+        }
       }
 
       // Submit review
@@ -160,10 +232,16 @@
           alert("✅ Review submitted successfully!");
           e.target.reset();
           document.getElementById("reviewSection").style.display = "none";
+          await loadReviews();
+          await loadAppointments();
         } catch (err) {
           alert("Error submitting review: " + (err.response?.data.message || err.message));
         }
       });
+
+      // Initial load
+      await loadReviews();
+      await loadAppointments();
     });
   </script>
 </body>
