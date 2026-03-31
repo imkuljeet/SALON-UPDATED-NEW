@@ -13,11 +13,11 @@ form.addEventListener("submit", async function (e) {
   try {
     const response = await axios.post("http://localhost:3000/user/signup", data);
 
-    alert("Signup successful!");
+    alert(response.data.message); // show backend success message
     window.location.href = "login.html";
   } catch (error) {
     if (error.response) {
-      alert("Error: " + error.response.data.message);
+      alert(error.response.data.message); // show backend error message
     } else {
       alert("Network error: " + error.message);
     }
