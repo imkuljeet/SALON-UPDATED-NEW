@@ -1,6 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+
+const sequelize = require('./util/database');
+
 require('dotenv').config();
 
 const userRoutes = require('./routes/user');
@@ -13,6 +16,11 @@ app.use(bodyParser.json());
 
 app.use('/user', userRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+sequelize.sync()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+    });
+  })
+  .catch(err => console.error('Failed to sync database:', err));
+

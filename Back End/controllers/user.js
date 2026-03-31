@@ -1,16 +1,21 @@
-const users = [];
+const User = require('../models/User');
 
-exports.signup = (req, res) => {
+exports.signup = async (req, res) => {
   const { fullname, email, phone, password } = req.body;
+
   if (!fullname || !email || !phone || !password) {
     return res.status(400).json({ message: 'All fields are required' });
   }
-  const existingUser = users.find(u => u.email === email);
-  if (existingUser) {
-    return res.status(400).json({ message: 'Email already registered' });
+
+  try {
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+
+    const newUser = await User.create({ fullname, email, phone, password });
+    return res.status(200).json({ message: 'User registered successfully', user: newUser });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
   }
-  const newUser = { fullname, email, phone, password };
-  users.push(newUser);
-  console.log('User registered:', newUser);
-  return res.status(200).json({ message: 'User registered successfully!' });
 };
