@@ -7,6 +7,7 @@ const sequelize = require('./util/database');
 require('dotenv').config();
 
 const userRoutes = require('./routes/user');
+const customerRoutes = require('./routes/customer');
 
 const app = express();
 const PORT = process.env.PORT;
@@ -15,6 +16,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use('/user', userRoutes);
+app.use('/customer',customerRoutes);
 
 sequelize.sync({ alter: true })
   .then(() => {

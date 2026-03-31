@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Profile</title>
+</head>
+<body>
+  <h2>Profile Management</h2>
+  <form id="profileForm">
+    <label for="fullname">Full Name:</label><br>
+    <input type="text" id="fullname" name="fullname" required><br><br>
+
+    <label for="email">Email:</label><br>
+    <input type="email" id="email" name="email" required readonly><br><br>
+
+    <label for="phone">Phone:</label><br>
+    <input type="tel" id="phone" name="phone" required><br><br>
+
+    <label for="preferences">Preferences:</label><br>
+    <textarea id="preferences" name="preferences" rows="4" cols="40"></textarea><br><br>
+
+    <button type="submit">Update Profile</button>
+  </form>
+
+  <button onclick="window.location.href='customer-dashboard.html'">Back to Dashboard</button>
+
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="customer-profile.js"></script>
+</body>
+</html>
