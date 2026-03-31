@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Management</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <h1>User Management</h1>
+  <p>Manage customer accounts below.</p>
+
+  <table border="1" cellpadding="8" cellspacing="0" id="userTable">
+    <thead>
+      <tr>
+        <th>Full Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Role</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="userList"></tbody>
+  </table>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        // Fetch all customers (admin route /user/all now returns only customers)
+        const token = localStorage.getItem("token"); // admin JWT stored after login
+        const res = await axios.get("http://localhost:3000/user/all", {
+          headers: { Authorization: token }
+        });
+
+        const customers = res.data.customers;
+        const userList = document.getElementById("userList");
+
+        customers.forEach(customer => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td>${customer.fullname}</td>
+            <td>${customer.email}</td>
+            <td>${customer.phone}</td>
+            <td>${customer.role}</td>
+            <td>
+              <button onclick="deleteUser(${customer.id})">Delete</button>
+              <button onclick="promoteUser(${customer.id})">Promote to Admin</button>
+            </td>
+          `;
+
+          userList.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Error fetching customers:", err);
+      }
+    });
+
+    async function deleteUser(id) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`http://localhost:3000/user/${id}`, {
+          headers: { Authorization: token }
+        });
+        alert("Customer deleted successfully");
+        location.reload();
+      } catch (err) {
+        console.error("Error deleting customer:", err);
+      }
+    }
+
+    async function promoteUser(id) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.put(`http://localhost:3000/user/promote/${id}`, {}, {
+          headers: { Authorization: token }
+        });
+        alert("Customer promoted to admin");
+        location.reload();
+      } catch (err) {
+        console.error("Error promoting customer:", err);
+      }
+    }
+  </script>
+</body>
+</html>
