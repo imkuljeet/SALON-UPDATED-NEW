@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Appointment Management</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <h1>Appointment Management</h1>
+  <p>View and manage all appointments below.</p>
+
+  <table border="1" cellpadding="8" cellspacing="0" id="appointmentTable">
+    <thead>
+      <tr>
+        <th>Customer</th>
+        <th>Service</th>
+        <th>Staff</th>
+        <th>Time</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="appointmentList"></tbody>
+  </table>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const token = localStorage.getItem("token"); // admin JWT
+        const res = await axios.get("http://localhost:3000/appointment/all", {
+          headers: { Authorization: token }
+        });
+
+        const appointments = res.data.appointments;
+        const appointmentList = document.getElementById("appointmentList");
+
+        appointments.forEach(appt => {
+          const row = document.createElement("tr");
+
+          const customerName = appt.User ? appt.User.fullname : "Unknown";
+          const serviceName = appt.ServiceAvailability?.Service?.name || "N/A";
+          const staffName = appt.ServiceAvailability?.Staff?.name || "N/A";
+          const time = appt.ServiceAvailability?.startTime || "N/A";
+
+          row.innerHTML = `
+            <td>${customerName}</td>
+            <td>${serviceName}</td>
+            <td>${staffName}</td>
+            <td>${time}</td>
+            <td>${appt.status}</td>
+            <td>
+              <button onclick="cancelAppointment(${appt.id})">Cancel</button>
+              <button onclick="rescheduleAppointment(${appt.id})">Reschedule</button>
+            </td>
+          `;
+
+          appointmentList.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Error fetching appointments:", err);
+      }
+    });
+
+    async function cancelAppointment(id) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.put(`http://localhost:3000/appointment/cancel/${id}`, {}, {
+          headers: { Authorization: token }
+        });
+        alert("Appointment cancelled successfully");
+        location.reload();
+      } catch (err) {
+        console.error("Error cancelling appointment:", err);
+      }
+    }
+
+    async function rescheduleAppointment(id) {
+      const newSlotId = prompt("Enter new slot ID:");
+      if (!newSlotId) return;
+
+      try {
+        const token = localStorage.getItem("token");
+        await axios.put(`http://localhost:3000/appointment/reschedule/${id}`, { newSlotId }, {
+          headers: { Authorization: token }
+        });
+        alert("Appointment rescheduled successfully");
+        location.reload();
+      } catch (err) {
+        console.error("Error rescheduling appointment:", err);
+      }
+    }
+  </script>
+</body>
+</html>

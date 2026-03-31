@@ -4,6 +4,7 @@ const transporter = require('../util/mailer');
 const sequelize = require('../util/database');
 const Service = require('../models/Service');
 const Staff = require('../models/Staff');
+const User = require('../models/User');
 
 exports.bookAppointment = async (req, res) => {
   const t = await sequelize.transaction();
@@ -143,5 +144,78 @@ exports.rescheduleAppointment = async (req, res) => {
     return res.status(200).json({ message: 'Appointment rescheduled successfully', appointment });
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+// Admin: get all appointments with customer info
+exports.getAllAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.findAll({
+      include: [
+        {
+          model: ServiceAvailability,
+          include: [Service, Staff]
+        },
+        {
+          model: User, // <-- join User to get fullname, email, etc.
+          attributes: ['id', 'fullname', 'email', 'phone']
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.status(200).json({ appointments });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+// Cancel appointment (admin)
+exports.adminCancelAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const appointment = await Appointment.findByPk(id);
+
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    appointment.status = 'cancelled';
+    await appointment.save();
+
+    res.status(200).json({ message: 'Appointment cancelled by admin', appointment });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+// Reschedule appointment (admin)
+exports.adminRescheduleAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newSlotId } = req.body;
+
+    const appointment = await Appointment.findByPk(id);
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    const slot = await ServiceAvailability.findByPk(newSlotId);
+    if (!slot) {
+      return res.status(404).json({ message: 'Slot not found' });
+    }
+
+    const existing = await Appointment.findOne({ where: { slotId: newSlotId, status: 'booked' } });
+    if (existing) {
+      return res.status(400).json({ message: 'This slot is already booked' });
+    }
+
+    appointment.slotId = newSlotId;
+    appointment.status = 'booked';
+    await appointment.save();
+
+    res.status(200).json({ message: 'Appointment rescheduled by admin', appointment });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
