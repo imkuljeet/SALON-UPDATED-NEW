@@ -196,6 +196,127 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
     });
 
+  //--------
+
+  // Load all staff and render them in a table
+  async function loadStaff() {
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/staff/get-staff",
+        {
+          headers: { Authorization: token },
+        }
+      );
+      const staffMembers = response.data.staff;
+      const staffBody = document.getElementById("staffList");
+      staffBody.innerHTML = "";
+
+      if (!staffMembers || staffMembers.length === 0) {
+        staffBody.innerHTML = `<tr><td colspan="5">No staff members listed yet.</td></tr>`;
+      } else {
+        staffMembers.forEach((staff) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+          <td>${staff.name}</td>
+          <td>${staff.specialization}</td>
+          <td>${staff.experience}</td>
+          <td>${staff.bio}</td>
+          <td>
+            <button class="editStaffBtn">Edit</button>
+            <button class="deleteStaffBtn">Delete</button>
+          </td>
+        `;
+
+          // Attach listeners for edit and delete
+          row
+            .querySelector(".editStaffBtn")
+            .addEventListener("click", () => editStaff(staff.id));
+          row
+            .querySelector(".deleteStaffBtn")
+            .addEventListener("click", () => deleteStaff(staff.id));
+
+          staffBody.appendChild(row);
+        });
+      }
+    } catch (error) {
+      alert(
+        "Failed to load staff: " +
+          (error.response?.data.message || error.message)
+      );
+    }
+  }
+
+  // Delete staff
+  async function deleteStaff(id) {
+    if (!confirm("Are you sure you want to delete this staff member?")) return;
+    try {
+      await axios.delete(`http://localhost:3000/staff/delete-staff/${id}`, {
+        headers: { Authorization: token },
+      });
+      alert("Staff member deleted successfully");
+      loadStaff();
+    } catch (error) {
+      alert(
+        "Failed to delete staff: " +
+          (error.response?.data.message || error.message)
+      );
+    }
+  }
+
+  // Edit staff
+  async function editStaff(id) {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/staff/get-staff/${id}`,
+        {
+          headers: { Authorization: token },
+        }
+      );
+      const staff = response.data.staff;
+
+      // Show form and pre-fill values
+      document.getElementById("staffFormContainer").style.display = "block";
+      document.getElementById("staffName").value = staff.name;
+      document.getElementById("specialization").value = staff.specialization;
+      document.getElementById("experience").value = staff.experience;
+      document.getElementById("bio").value = staff.bio;
+
+      // Override form submit for update
+      document.getElementById("staffForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const data = {
+          name: e.target.staffName.value,
+          specialization: e.target.specialization.value,
+          experience: e.target.experience.value,
+          bio: e.target.bio.value,
+        };
+        try {
+          await axios.put(
+            `http://localhost:3000/staff/edit-staff/${id}`,
+            data,
+            {
+              headers: { Authorization: token },
+            }
+          );
+          alert("Staff updated successfully");
+          e.target.reset();
+          document.getElementById("staffFormContainer").style.display = "none";
+          loadStaff();
+        } catch (error) {
+          alert(
+            "Failed to update staff: " +
+              (error.response?.data.message || error.message)
+          );
+        }
+      };
+    } catch (error) {
+      alert(
+        "Failed to fetch staff details: " +
+          (error.response?.data.message || error.message)
+      );
+    }
+  }
+
   // Logout
   document.getElementById("logoutBtn").addEventListener("click", () => {
     localStorage.removeItem("token");
@@ -205,4 +326,5 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Initial load
   loadServices();
+  loadStaff();
 });
