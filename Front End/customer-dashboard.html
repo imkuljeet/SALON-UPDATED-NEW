@@ -1,9 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Customer Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    .slot-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .slot-tile {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 15px;
+      width: 220px;
+      background-color: #f9f9f9;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    .slot-tile:hover {
+      transform: scale(1.05);
+      background-color: #eef;
+    }
+    .slot-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .slot-detail {
+      margin: 4px 0;
+    }
+  </style>
 </head>
 <body>
   <h1>Customer Dashboard</h1>
@@ -14,9 +44,22 @@
 
   <div id="customerDetails"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <!-- Service Availability Tiles -->
+  <div id="availabilitySection">
+    <h2>Available Appointment Slots</h2>
+    <div class="slot-container" id="availabilityList"></div>
+  </div>
 
   <script>
+    // Helper function to convert "HH:mm:ss" to "hh:mm AM/PM"
+    function formatTime(timeString) {
+      const [hours, minutes] = timeString.split(":");
+      let h = parseInt(hours, 10);
+      const suffix = h >= 12 ? "PM" : "AM";
+      h = ((h + 11) % 12 + 1); // convert to 12-hour format
+      return `${h}:${minutes} ${suffix}`;
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -25,6 +68,7 @@
         return;
       }
 
+      // Load customer profile
       try {
         const response = await axios.get("http://localhost:3000/customer/profile", {
           headers: { Authorization: token }
@@ -43,6 +87,58 @@
         alert("Failed to load customer details: " + (error.response?.data.message || error.message));
       }
 
+      // Load service availability slots
+      async function loadAvailability() {
+        try {
+          const serviceRes = await axios.get("http://localhost:3000/service/get-services", {
+            headers: { Authorization: token }
+          });
+          const services = serviceRes.data.services;
+          const listBody = document.getElementById("availabilityList");
+          listBody.innerHTML = "";
+
+          for (const service of services) {
+            const availabilityRes = await axios.get(
+              `http://localhost:3000/service-availability/${service.id}`,
+              { headers: { Authorization: token } }
+            );
+
+            const slots = availabilityRes.data.availability;
+            slots.forEach(slot => {
+              const tile = document.createElement("div");
+              tile.className = "slot-tile";
+              tile.innerHTML = `
+                <div class="slot-title">${service.name}</div>
+                <div class="slot-detail"><strong>Day:</strong> ${slot.dayOfWeek}</div>
+                <div class="slot-detail"><strong>Time:</strong> ${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}</div>
+                <div class="slot-detail"><strong>Staff:</strong> ${slot.Staff ? slot.Staff.name : "—"}</div>
+                <div style="margin-top:10px; text-align:center; color:#007BFF;">Click to Book</div>
+              `;
+              tile.addEventListener("click", () => bookAppointment(slot.id));
+              listBody.appendChild(tile);
+            });
+          }
+        } catch (error) {
+          alert("Failed to load availability: " + (error.response?.data.message || error.message));
+        }
+      }
+
+      // Book appointment
+      async function bookAppointment(slotId) {
+        try {
+          const response = await axios.post("http://localhost:3000/appointment/book", 
+            { slotId }, 
+            { headers: { Authorization: token } }
+          );
+          alert("Appointment booked successfully!");
+        } catch (error) {
+          alert("Failed to book appointment: " + (error.response?.data.message || error.message));
+        }
+      }
+
+      loadAvailability();
+
+      // Logout
       document.getElementById("logoutBtn").addEventListener("click", () => {
         localStorage.removeItem("token");
         localStorage.removeItem("role");

@@ -12,6 +12,7 @@ const serviceRoutes = require('./routes/service');
 const staffRoutes = require('./routes/staff');
 const staffAvailabilityRoutes = require('./routes/staffAvailability');
 const serviceAvailabilityRoutes = require('./routes/serviceAvailability');
+const appointmentRoutes = require('./routes/appointment');
 
 const Staff = require('./models/Staff');
 const Service = require('./models/Service');
@@ -28,6 +29,8 @@ app.use('/service',serviceRoutes);
 app.use('/staff', staffRoutes);
 app.use('/availability', staffAvailabilityRoutes);
 app.use('/service-availability', serviceAvailabilityRoutes);
+app.use('/appointment', appointmentRoutes);
+
 
 Staff.belongsToMany(Service, { through: "StaffServices" });
 Service.belongsToMany(Staff, { through: "StaffServices" });
