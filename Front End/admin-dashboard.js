@@ -317,6 +317,65 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  //--------------------------------------------------------------------
+
+  // Toggle availability form visibility
+  document
+    .getElementById("toggleAvailabilityFormBtn")
+    .addEventListener("click", () => {
+      const formContainer = document.getElementById(
+        "availabilityFormContainer"
+      );
+      formContainer.style.display =
+        formContainer.style.display === "none" ? "block" : "none";
+
+      // Populate staff dropdown dynamically
+      axios
+        .get("http://localhost:3000/staff/get-staff", {
+          headers: { Authorization: token },
+        })
+        .then((response) => {
+          const staffSelect = document.getElementById("staffSelect");
+          staffSelect.innerHTML = "";
+          response.data.staff.forEach((staff) => {
+            const option = document.createElement("option");
+            option.value = staff.id;
+            option.textContent = staff.name;
+            staffSelect.appendChild(option);
+          });
+        });
+    });
+
+  // Handle availability form submission
+  document.getElementById("availabilityForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const data = {
+      staffId: e.target.staffSelect.value,
+      dayOfWeek: e.target.dayOfWeek.value,
+      startTime: e.target.startTime.value,
+      endTime: e.target.endTime.value,
+    };
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/availability/add-availability",
+        data,
+        {
+          headers: { Authorization: token },
+        }
+      );
+      alert(response.data.message);
+      e.target.reset();
+      document.getElementById("availabilityFormContainer").style.display =
+        "none";
+      // Optionally reload staff availability list
+    } catch (error) {
+      alert(
+        "Failed to add availability: " +
+          (error.response?.data.message || error.message)
+      );
+    }
+  };
+
   // Logout
   document.getElementById("logoutBtn").addEventListener("click", () => {
     localStorage.removeItem("token");

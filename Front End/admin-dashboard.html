@@ -13,6 +13,7 @@
     <button id="logoutBtn">Logout</button>
     <button id="toggleFormBtn">Add Service</button>
     <button id="toggleStaffFormBtn">Add Staff</button>
+    <button id="toggleAvailabilityFormBtn">Add Staff Availability</button>
 
     <h2>Service Listings</h2>
     <table border="1" cellpadding="8" cellspacing="0" id="serviceTable">
@@ -112,6 +113,43 @@
         ><br /><br />
 
         <button type="submit">Save Staff Member</button>
+      </form>
+    </div>
+
+    <!-- -------------------------------------------------------- -->
+
+    <div id="availabilityFormContainer" style="display: none; margin-top: 20px">
+      <h2>Add Staff Availability</h2>
+      <form id="availabilityForm">
+        <label for="staffSelect">Select Staff:</label><br />
+        <select id="staffSelect" name="staffSelect" required>
+          <!-- Populate dynamically with staff list --></select
+        ><br /><br />
+
+        <label for="dayOfWeek">Day of Week:</label><br />
+        <select id="dayOfWeek" name="dayOfWeek" required>
+          <option value="">-- Select Day --</option>
+          <option value="Monday">Monday</option>
+          <option value="Tuesday">Tuesday</option>
+          <option value="Wednesday">Wednesday</option>
+          <option value="Thursday">Thursday</option>
+          <option value="Friday">Friday</option>
+          <option value="Saturday">Saturday</option>
+          <option value="Sunday">Sunday</option></select
+        ><br /><br />
+
+        <label for="startTime">Start Time:</label><br />
+        <input
+          type="time"
+          id="startTime"
+          name="startTime"
+          required
+        /><br /><br />
+
+        <label for="endTime">End Time:</label><br />
+        <input type="time" id="endTime" name="endTime" required /><br /><br />
+
+        <button type="submit">Save Availability</button>
       </form>
     </div>
 
