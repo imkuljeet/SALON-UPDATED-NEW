@@ -38,8 +38,8 @@ app.use('/payment', paymentRoutes);
 Staff.belongsToMany(Service, { through: "StaffServices" });
 Service.belongsToMany(Staff, { through: "StaffServices" });
 
-sequelize.sync({ alter: true })
-// sequelize.sync()
+// sequelize.sync({ alter: true })
+sequelize.sync()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}`);
