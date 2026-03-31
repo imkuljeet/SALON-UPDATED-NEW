@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 exports.signup = async (req, res) => {
   const { fullname, email, phone, password, role } = req.body;
@@ -42,8 +43,18 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    return res.status(200).json({ message: 'Login successful'});
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+
+    return res.status(200).json({
+      message: 'Login successful',
+      token
+    });
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+

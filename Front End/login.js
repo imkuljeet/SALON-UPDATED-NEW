@@ -10,8 +10,11 @@ form.addEventListener("submit", async function (e) {
 
   try {
     const response = await axios.post("http://localhost:3000/user/login", data);
+
     alert(response.data.message);
-    
+
+    localStorage.setItem("token", response.data.token);
+
     // window.location.href = "dashboard.html";
   } catch (error) {
     if (error.response) {
