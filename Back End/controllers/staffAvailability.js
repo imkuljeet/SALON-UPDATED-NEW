@@ -1,4 +1,7 @@
 const StaffAvailability = require('../models/StaffAvailability;');
+const ServiceAvailability = require('../models/ServiceAvailability');
+const Staff = require('../models/Staff');
+const Service = require('../models/Service');
 
 // Add availability
 exports.addAvailability = async (req, res) => {
@@ -8,7 +11,26 @@ exports.addAvailability = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    await StaffAvailability.create({ staffId, dayOfWeek, startTime, endTime });
+    // Create staff availability
+    const staffAvailability = await StaffAvailability.create({
+      staffId, dayOfWeek, startTime, endTime
+    });
+
+    // Find staff specialization
+    const staff = await Staff.findByPk(staffId);
+    if (staff) {
+      // Find matching service by specialization
+      const service = await Service.findOne({ where: { name: staff.specialization } });
+      if (service) {
+        await ServiceAvailability.create({
+          serviceId: service.id,
+          dayOfWeek,
+          startTime,
+          endTime
+        });
+      }
+    }
+
     return res.status(201).json({ message: 'Availability added successfully' });
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
