@@ -11,6 +11,7 @@ const customerRoutes = require('./routes/customer');
 const serviceRoutes = require('./routes/service');
 const staffRoutes = require('./routes/staff');
 const staffAvailabilityRoutes = require('./routes/staffAvailability');
+const serviceAvailabilityRoutes = require('./routes/serviceAvailability');
 
 const app = express();
 const PORT = process.env.PORT;
@@ -23,6 +24,8 @@ app.use('/customer',customerRoutes);
 app.use('/service',serviceRoutes);
 app.use('/staff', staffRoutes);
 app.use('/availability', staffAvailabilityRoutes);
+app.use('/service-availability', serviceAvailabilityRoutes);
+
 
 
 

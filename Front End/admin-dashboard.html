@@ -14,9 +14,15 @@
     <button id="toggleFormBtn">Add Service</button>
     <button id="toggleStaffFormBtn">Add Staff</button>
     <button id="toggleAvailabilityFormBtn">Add Staff Availability</button>
+    <button
+      id="serviceSlotsBtn"
+      onclick="window.location.href='service-slots.html'"
+    >
+      View Service Slots
+    </button>
 
     <!-- Service Section -->
-    <div id="serviceSection" style="display:none; margin-top:20px;">
+    <div id="serviceSection" style="display: none; margin-top: 20px">
       <h2>Service Listings</h2>
       <table border="1" cellpadding="8" cellspacing="0" id="serviceTable">
         <thead>
@@ -32,7 +38,7 @@
     </div>
 
     <!-- Staff Section -->
-    <div id="staffSection" style="display:none; margin-top:20px;">
+    <div id="staffSection" style="display: none; margin-top: 20px">
       <h2>Staff Listings</h2>
       <table border="1" cellpadding="8" cellspacing="0" id="staffTable">
         <thead>
@@ -69,7 +75,14 @@
         <br /><br />
 
         <label for="description">Description:</label><br />
-        <textarea id="description" name="description" rows="4" cols="40" required></textarea><br /><br />
+        <textarea
+          id="description"
+          name="description"
+          rows="4"
+          cols="40"
+          required
+        ></textarea
+        ><br /><br />
 
         <label for="price">Price (₹):</label><br />
         <input type="number" id="price" name="price" required /><br /><br />
@@ -83,7 +96,12 @@
       <h2>Add New Staff Member</h2>
       <form id="staffForm">
         <label for="staffName">Full Name:</label><br />
-        <input type="text" id="staffName" name="staffName" required /><br /><br />
+        <input
+          type="text"
+          id="staffName"
+          name="staffName"
+          required
+        /><br /><br />
 
         <label for="specialization">Specialization:</label><br />
         <select id="specialization" name="specialization" required>
@@ -97,14 +115,20 @@
           <option value="Waxing">Waxing</option>
           <option value="Threading">Threading</option>
           <option value="Massage">Massage</option>
-          <option value="Bridal Makeup">Bridal Makeup</option>
-        </select><br /><br />
+          <option value="Bridal Makeup">Bridal Makeup</option></select
+        ><br /><br />
 
         <label for="experience">Years of Experience:</label><br />
-        <input type="number" id="experience" name="experience" required /><br /><br />
+        <input
+          type="number"
+          id="experience"
+          name="experience"
+          required
+        /><br /><br />
 
         <label for="bio">Profile/Bio:</label><br />
-        <textarea id="bio" name="bio" rows="4" cols="40" required></textarea><br /><br />
+        <textarea id="bio" name="bio" rows="4" cols="40" required></textarea
+        ><br /><br />
 
         <button type="submit">Save Staff Member</button>
       </form>
@@ -116,8 +140,8 @@
       <form id="availabilityForm">
         <label for="staffSelect">Select Staff:</label><br />
         <select id="staffSelect" name="staffSelect" required>
-          <!-- Populate dynamically with staff list -->
-        </select><br /><br />
+          <!-- Populate dynamically with staff list --></select
+        ><br /><br />
 
         <label for="dayOfWeek">Day of Week:</label><br />
         <select id="dayOfWeek" name="dayOfWeek" required>
@@ -128,11 +152,16 @@
           <option value="Thursday">Thursday</option>
           <option value="Friday">Friday</option>
           <option value="Saturday">Saturday</option>
-          <option value="Sunday">Sunday</option>
-        </select><br /><br />
+          <option value="Sunday">Sunday</option></select
+        ><br /><br />
 
         <label for="startTime">Start Time:</label><br />
-        <input type="time" id="startTime" name="startTime" required /><br /><br />
+        <input
+          type="time"
+          id="startTime"
+          name="startTime"
+          required
+        /><br /><br />
 
         <label for="endTime">End Time:</label><br />
         <input type="time" id="endTime" name="endTime" required /><br /><br />
@@ -142,7 +171,7 @@
     </div>
 
     <!-- Availability Section -->
-    <div id="availabilitySection" style="display:none; margin-top:20px;">
+    <div id="availabilitySection" style="display: none; margin-top: 20px">
       <h2>Staff Availability</h2>
       <table border="1" cellpadding="8" cellspacing="0" id="availabilityTable">
         <thead>
