@@ -18,29 +18,29 @@ exports.addAvailability = async (req, res) => {
   }
 };
 
-exports.getAvailability = async (req, res) => {
-  try {
-    const { serviceId } = req.params;
+// exports.getAvailability = async (req, res) => {
+//   try {
+//     const { serviceId } = req.params;
 
-    // Find service
-    const service = await Service.findByPk(serviceId);
-    if (!service) {
-      return res.status(404).json({ message: 'Service not found' });
-    }
+//     // Find service
+//     const service = await Service.findByPk(serviceId);
+//     if (!service) {
+//       return res.status(404).json({ message: 'Service not found' });
+//     }
 
-    const availability = await ServiceAvailability.findAll({
-      where: { serviceId },
-      include: [{ model: Staff, attributes: ['name'] }]
-    });    
+//     const availability = await ServiceAvailability.findAll({
+//       where: { serviceId },
+//       include: [{ model: Staff, attributes: ['name'] }]
+//     });    
 
-    // Find staff with matching specialization
-    const staffMembers = await Staff.findAll({ where: { specialization: service.name } });
+//     // Find staff with matching specialization
+//     const staffMembers = await Staff.findAll({ where: { specialization: service.name } });
 
-    return res.status(200).json({ service, availability, staffMembers });
-  } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
+//     return res.status(200).json({ service, availability, staffMembers });
+//   } catch (err) {
+//     return res.status(500).json({ message: 'Server error', error: err.message });
+//   }
+// };
 
 // Edit availability slot
 exports.editAvailability = async (req, res) => {
@@ -74,6 +74,39 @@ exports.deleteAvailability = async (req, res) => {
     }
     await availability.destroy();
     return res.status(200).json({ message: 'Availability deleted successfully' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+const Appointment = require('../models/Appointment');
+
+exports.getAvailability = async (req, res) => {
+  try {
+    const { serviceId } = req.params;
+
+    const service = await Service.findByPk(serviceId);
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    const availability = await ServiceAvailability.findAll({
+      where: { serviceId },
+      include: [{ model: Staff, attributes: ['name'] }]
+    });
+
+    // Add isBooked flag by checking appointments
+    const slotsWithFlag = await Promise.all(
+      availability.map(async slot => {
+        const booked = await Appointment.findOne({ where: { slotId: slot.id, status: 'booked' } });
+        return {
+          ...slot.toJSON(),
+          isBooked: !!booked
+        };
+      })
+    );
+
+    return res.status(200).json({ service, availability: slotsWithFlag });
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
