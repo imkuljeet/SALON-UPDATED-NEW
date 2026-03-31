@@ -20,22 +20,22 @@ exports.createOrder = async (req, res) => {
     const slot = await ServiceAvailability.findByPk(slotId, {
       include: [Service, Staff],
     });
-    
     if (!slot) return res.status(404).json({ message: "Slot not found" });
 
-    const amount = slot.Service.price * 100; // convert ₹ to paise
+    const amount = slot.Service.price * 100;
 
     const order = await razorpay.orders.create({
       amount,
       currency: "INR",
     });
 
-    // Create appointment with pending status
-    const appointment = await Appointment.create({
-      userId,
-      slotId,
-      status: "pending",
-    });
+    // Find or create appointment
+    let appointment = await Appointment.findOne({ where: { userId, slotId } });
+    if (!appointment) {
+      appointment = await Appointment.create({ userId, slotId, status: "pending" });
+    } else {
+      await appointment.update({ status: "pending" });
+    }
 
     // Save order linked to appointment
     await Order.create({
@@ -45,38 +45,18 @@ exports.createOrder = async (req, res) => {
       appointmentId: appointment.id,
     });
 
-    // Send confirmation email (pending status)
-    // Send confirmation email (booking complete)
-    await transporter.sendMail({
-      from: process.env.SMTP_EMAIL,
-      to: req.user.email,
-      subject: "Appointment Booking Complete",
-      text: `Hello ${req.user.fullname},
-
-Your appointment has been booked successfully.
-
-Details:
-- Service: ${slot.Service.name}
-- Staff: ${slot.Staff ? slot.Staff.name : "Assigned Staff"}
-- Amount: ₹${slot.Service.price}
-- Time: ${slot.startTime}
-
-Thank you for choosing us!`,
-    });
-
     res.json({
       order_id: order.id,
       amount: order.amount,
       key_id: process.env.RAZORPAY_KEY_ID,
     });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Payment order creation failed", error: err.message });
+    res.status(500).json({ message: "Payment order creation failed", error: err.message });
   }
 };
 
 // Step 2: Update payment status
+
 exports.updatePaymentStatus = async (req, res) => {
   const { order_id, payment_id } = req.body;
   try {
@@ -89,13 +69,8 @@ exports.updatePaymentStatus = async (req, res) => {
     await order.update({ payment_id, status: "SUCCESSFUL" });
     await order.Appointment.update({ status: "booked" });
 
-    res.json({
-      success: true,
-      message: "Payment successful, appointment confirmed",
-    });
+    res.json({ success: true, message: "Payment successful, appointment confirmed" });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Payment update failed", error: err.message });
+    res.status(500).json({ message: "Payment update failed", error: err.message });
   }
 };
