@@ -14,6 +14,8 @@
     <button id="toggleFormBtn">Add Service</button>
     <button id="toggleStaffFormBtn">Add Staff</button>
     <button id="toggleAvailabilityFormBtn">Add Staff Availability</button>
+    <button id="toggleAssignServiceBtn">Assign Service</button>
+
     <button
       id="serviceSlotsBtn"
       onclick="window.location.href='service-slots.html'"
@@ -185,6 +187,33 @@
         </thead>
         <tbody id="availabilityList"></tbody>
       </table>
+    </div>
+
+    <!-- Assign Service Form -->
+    <div
+      id="assignServiceFormContainer"
+      style="display: none; margin-top: 20px"
+    >
+      <h2>Assign Service to Staff</h2>
+      <form id="assignServiceForm">
+        <label for="staffSelectAssign">Select Staff:</label><br />
+        <select
+          id="staffSelectAssign"
+          name="staffSelectAssign"
+          required
+        ></select
+        ><br /><br />
+
+        <label for="serviceSelectAssign">Select Service:</label><br />
+        <select
+          id="serviceSelectAssign"
+          name="serviceSelectAssign"
+          required
+        ></select
+        ><br /><br />
+
+        <button type="submit">Assign</button>
+      </form>
     </div>
 
     <script src="admin-dashboard.js"></script>

@@ -1,4 +1,7 @@
 const Staff = require('../models/Staff');
+const Service = require("../models/Service");
+const StaffAvailability = require("../models/StaffAvailability;");
+const ServiceAvailability = require("../models/ServiceAvailability");
 
 // Get all staff members
 exports.getStaff = async (req, res) => {
@@ -75,3 +78,40 @@ exports.deleteStaff = async (req, res) => {
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+exports.assignService = async (req, res) => {
+  try {
+    const { staffId, serviceId } = req.body;
+    if (!staffId || !serviceId) {
+      return res.status(400).json({ message: "Staff ID and Service ID are required" });
+    }
+
+    const staff = await Staff.findByPk(staffId);
+    const service = await Service.findByPk(serviceId);
+
+    if (!staff || !service) {
+      return res.status(404).json({ message: "Staff or Service not found" });
+    }
+
+    // Link staff and service (many-to-many)
+    await staff.addService(service);
+
+    // Also replicate staff availability into service availability
+    const staffAvailabilities = await StaffAvailability.findAll({ where: { staffId } });
+    for (const slot of staffAvailabilities) {
+      await ServiceAvailability.create({
+        serviceId: service.id,
+        staffId: staff.id,
+        dayOfWeek: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime
+      });
+    }
+
+    return res.status(200).json({ message: "Service assigned and availability updated successfully" });
+  } catch (err) {
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+

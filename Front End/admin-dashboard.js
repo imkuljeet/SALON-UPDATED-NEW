@@ -461,6 +461,58 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  //----------------------------------------------------------------------------------------
+
+  document.getElementById("toggleAssignServiceBtn").addEventListener("click", async () => {
+    const formContainer = document.getElementById("assignServiceFormContainer");
+    formContainer.style.display = formContainer.style.display === "none" ? "block" : "none";
+  
+    // Populate staff dropdown
+    const staffRes = await axios.get("http://localhost:3000/staff/get-staff", {
+      headers: { Authorization: token }
+    });
+    const staffSelect = document.getElementById("staffSelectAssign");
+    staffSelect.innerHTML = "";
+    staffRes.data.staff.forEach(staff => {
+      const option = document.createElement("option");
+      option.value = staff.id;
+      option.textContent = staff.name;
+      staffSelect.appendChild(option);
+    });
+  
+    // Populate service dropdown
+    const serviceRes = await axios.get("http://localhost:3000/service/get-services", {
+      headers: { Authorization: token }
+    });
+    const serviceSelect = document.getElementById("serviceSelectAssign");
+    serviceSelect.innerHTML = "";
+    serviceRes.data.services.forEach(service => {
+      const option = document.createElement("option");
+      option.value = service.id;
+      option.textContent = service.name;
+      serviceSelect.appendChild(option);
+    });
+  });
+  
+  // Handle form submission
+  document.getElementById("assignServiceForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const data = {
+      staffId: e.target.staffSelectAssign.value,
+      serviceId: e.target.serviceSelectAssign.value
+    };
+    try {
+      const response = await axios.post("http://localhost:3000/staff/assign-service", data, {
+        headers: { Authorization: token }
+      });
+      alert(response.data.message);
+      e.target.reset();
+      document.getElementById("assignServiceFormContainer").style.display = "none";
+    } catch (error) {
+      alert("Failed to assign service: " + (error.response?.data.message || error.message));
+    }
+  };  
+
   // Logout
   document.getElementById("logoutBtn").addEventListener("click", () => {
     localStorage.removeItem("token");

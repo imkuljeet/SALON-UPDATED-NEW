@@ -9,4 +9,6 @@ router.get('/get-staff/:id', authenticate, staffController.getStaffById);
 router.put('/edit-staff/:id', authenticate, staffController.editStaff);
 router.delete('/delete-staff/:id', authenticate, staffController.deleteStaff);
 
+router.post('/assign-service', authenticate, staffController.assignService);
+
 module.exports = router;

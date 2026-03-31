@@ -13,6 +13,9 @@ const staffRoutes = require('./routes/staff');
 const staffAvailabilityRoutes = require('./routes/staffAvailability');
 const serviceAvailabilityRoutes = require('./routes/serviceAvailability');
 
+const Staff = require('./models/Staff');
+const Service = require('./models/Service');
+
 const app = express();
 const PORT = process.env.PORT;
 
@@ -26,8 +29,8 @@ app.use('/staff', staffRoutes);
 app.use('/availability', staffAvailabilityRoutes);
 app.use('/service-availability', serviceAvailabilityRoutes);
 
-
-
+Staff.belongsToMany(Service, { through: "StaffServices" });
+Service.belongsToMany(Staff, { through: "StaffServices" });
 
 // sequelize.sync({ alter: true })
 sequelize.sync()
