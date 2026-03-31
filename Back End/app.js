@@ -14,6 +14,8 @@ const staffAvailabilityRoutes = require('./routes/staffAvailability');
 const serviceAvailabilityRoutes = require('./routes/serviceAvailability');
 const appointmentRoutes = require('./routes/appointment');
 const paymentRoutes = require('./routes/payment');
+const reviewRoutes = require('./routes/reviewRoutes');
+
 
 const Staff = require('./models/Staff');
 const Service = require('./models/Service');
@@ -32,6 +34,8 @@ app.use('/availability', staffAvailabilityRoutes);
 app.use('/service-availability', serviceAvailabilityRoutes);
 app.use('/appointment', appointmentRoutes);
 app.use('/payment', paymentRoutes);
+app.use('/reviews', reviewRoutes);
+
 
 
 
@@ -41,8 +45,8 @@ Service.belongsToMany(Staff, { through: "StaffServices" });
 // Start cron jobs
 require('./cronjobs');
 
-// sequelize.sync({ alter: true })
-sequelize.sync()
+sequelize.sync({ alter: true })
+// sequelize.sync()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}`);
