@@ -107,6 +107,7 @@
         }
 
         // Load service availability slots and appointments
+        // Load service availability slots and appointments
         async function loadAvailability() {
           try {
             // Get all services
@@ -144,20 +145,23 @@
 
                 tile.className = "slot-tile" + (isBooked ? " booked" : "");
                 tile.innerHTML = `
-    <div class="slot-title">${service.name}</div>
-    <div class="slot-detail"><strong>Day:</strong> ${slot.dayOfWeek}</div>
-    <div class="slot-detail"><strong>Time:</strong> ${formatTime(
-      slot.startTime
-    )} - ${formatTime(slot.endTime)}</div>
-    <div class="slot-detail"><strong>Staff:</strong> ${
-      slot.Staff ? slot.Staff.name : "—"
-    }</div>
-    <div style="margin-top:10px; text-align:center; color:${
-      isBooked ? "red" : "#007BFF"
-    };">
-      ${isBooked ? "Already Booked" : "Click to Book"}
-    </div>
-  `;
+          <div class="slot-title">${service.name}</div>
+          <div class="slot-detail"><strong>Day:</strong> ${slot.dayOfWeek}</div>
+          <div class="slot-detail"><strong>Time:</strong> ${formatTime(
+            slot.startTime
+          )} - ${formatTime(slot.endTime)}</div>
+          <div class="slot-detail"><strong>Staff:</strong> ${
+            slot.Staff ? slot.Staff.name : "—"
+          }</div>
+          <div class="slot-detail"><strong>Price:</strong> ₹${
+            service.price
+          }</div>
+          <div style="margin-top:10px; text-align:center; color:${
+            isBooked ? "red" : "#007BFF"
+          };">
+            ${isBooked ? "Already Booked" : "Click to Book"}
+          </div>
+        `;
 
                 if (!isBooked) {
                   tile.addEventListener("click", () =>
