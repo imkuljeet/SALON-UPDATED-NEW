@@ -18,7 +18,7 @@ exports.signup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newUser = await User.create({ fullname, email, phone, password: hashedPassword, role });
-    return res.status(200).json({ message: `User registered successfully as ${role}`, user: newUser });
+    return res.status(200).json({ message: `User registered successfully as ${role}`});
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
@@ -42,7 +42,7 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    return res.status(200).json({ message: 'Login successful', user });
+    return res.status(200).json({ message: 'Login successful'});
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
   }

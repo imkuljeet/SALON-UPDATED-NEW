@@ -12,7 +12,7 @@ form.addEventListener("submit", async function (e) {
     const response = await axios.post("http://localhost:3000/user/login", data);
     alert(response.data.message);
     
-    window.location.href = "dashboard.html";
+    // window.location.href = "dashboard.html";
   } catch (error) {
     if (error.response) {
       alert(error.response.data.message);
