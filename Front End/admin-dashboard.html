@@ -20,6 +20,7 @@
         <th>Service Name</th>
         <th>Description</th>
         <th>Price (₹)</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody id="serviceList"></tbody>
@@ -41,74 +42,7 @@
     </form>
   </div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("You must be logged in as admin.");
-        window.location.href = "login.html";
-        return;
-      }
-
-      async function loadServices() {
-        try {
-          const response = await axios.get("http://localhost:3000/service/get-services", {
-            headers: { Authorization: token }
-          });
-          const services = response.data.services;
-          const listBody = document.getElementById("serviceList");
-          listBody.innerHTML = "";
-          if (!services || services.length === 0) {
-            listBody.innerHTML = `<tr><td colspan="4">No services listed yet.</td></tr>`;
-          } else {
-            services.forEach(service => {
-              listBody.innerHTML += `
-                <tr>
-                  <td>${service.name}</td>
-                  <td>${service.description}</td>
-                  <td>₹${service.price}</td>
-                </tr>
-              `;
-            });
-          }
-        } catch (error) {
-          alert("Failed to load services: " + (error.response?.data.message || error.message));
-        }
-      }
-
-      document.getElementById("toggleFormBtn").addEventListener("click", () => {
-        const formContainer = document.getElementById("formContainer");
-        formContainer.style.display = formContainer.style.display === "none" ? "block" : "none";
-      });
-
-      document.getElementById("serviceForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const data = {
-          name: e.target.name.value,
-          description: e.target.description.value,
-          price: e.target.price.value
-        };
-        try {
-          const response = await axios.post("http://localhost:3000/service/add-service", data, {
-            headers: { Authorization: token }
-          });
-          alert(response.data.message);
-          e.target.reset();
-          document.getElementById("formContainer").style.display = "none";
-          loadServices();
-        } catch (error) {
-          alert("Failed to add service: " + (error.response?.data.message || error.message));
-        }
-      });
-
-      document.getElementById("logoutBtn").addEventListener("click", () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
-        window.location.href = "login.html";
-      });
-
-      loadServices();
-    });
-  </script>
+<script src="admin-dashboard.js"></script>
+  
 </body>
 </html>
