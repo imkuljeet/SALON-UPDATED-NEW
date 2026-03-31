@@ -6,5 +6,7 @@ const appointmentController = require('../controllers/appointment');
 router.post('/book', authenticate, appointmentController.bookAppointment);
 router.get('/my-appointments', authenticate, appointmentController.getAppointments);
 router.put('/cancel/:id', authenticate, appointmentController.cancelAppointment);
+// routes/appointment.js
+router.get('/my', authenticate, appointmentController.getAppointmentsMyself);
 
 module.exports = router;

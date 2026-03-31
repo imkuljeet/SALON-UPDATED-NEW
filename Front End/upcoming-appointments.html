@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Appointments</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .appointment-card {
+      border: 1px solid #ccc; border-radius: 8px;
+      padding: 15px; margin: 10px 0;
+      background-color: #f9f9f9;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>My Appointments</h1>
+  <button onclick="window.location.href='customer-dashboard.html'">Back to Dashboard</button>
+  <div id="appointmentDetails"></div>
+
+  <script>
+    function formatTime(timeString) {
+      if (!timeString) return "";
+      const [hours, minutes] = timeString.split(":");
+      let h = parseInt(hours, 10);
+      const suffix = h >= 12 ? "PM" : "AM";
+      h = ((h + 11) % 12) + 1;
+      return `${h}:${minutes} ${suffix}`;
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You must be logged in to view appointments.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        // ✅ Correct endpoint for all appointments by userId
+        const response = await axios.get("http://localhost:3000/appointment/my", {
+          headers: { Authorization: token }
+        });
+
+        const appointments = response.data.appointments || [];
+        const detailsDiv = document.getElementById("appointmentDetails");
+
+        if (appointments.length === 0) {
+          detailsDiv.innerHTML = "<p>No appointments found.</p>";
+          return;
+        }
+
+        detailsDiv.innerHTML = "";
+        appointments.forEach(appt => {
+          const slot = appt.ServiceAvailability || {};
+          const service = slot.Service || {};
+          const staff = slot.Staff || {};
+
+          const card = document.createElement("div");
+          card.className = "appointment-card";
+          card.innerHTML = `
+            <h3>Appointment #${appt.id}</h3>
+            <p><strong>Status:</strong> ${appt.status}</p>
+            <p><strong>Service:</strong> ${service.name || "—"} (₹${service.price || "—"})</p>
+            <p><strong>Staff:</strong> ${staff.name || "Assigned Staff"}</p>
+            <p><strong>Day:</strong> ${slot.dayOfWeek || "—"}</p>
+            <p><strong>Time:</strong> ${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}</p>
+          `;
+          detailsDiv.appendChild(card);
+        });
+      } catch (error) {
+        alert("Failed to load appointments: " + (error.response?.data.message || error.message));
+      }
+    });
+  </script>
+</body>
+</html>

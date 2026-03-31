@@ -94,3 +94,26 @@ exports.cancelAppointment = async (req, res) => {
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+exports.getAppointmentsMyself = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const appointments = await Appointment.findAll({
+      where: { userId },
+      include: [
+        {
+          model: ServiceAvailability,
+          include: [Service, Staff]
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    return res.status(200).json({ appointments });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+
