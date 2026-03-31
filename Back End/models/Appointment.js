@@ -10,10 +10,10 @@ const Appointment = sequelize.define('Appointment', {
     primaryKey: true
   },
   status: {
-    type: DataTypes.ENUM('booked', 'completed', 'cancelled'),
-    defaultValue: 'booked'
+    type: DataTypes.ENUM('pending', 'booked', 'completed', 'cancelled'),
+    defaultValue: 'pending'
   }
-}, {
+  }, {
   tableName: 'appointments',
   timestamps: true
 });
