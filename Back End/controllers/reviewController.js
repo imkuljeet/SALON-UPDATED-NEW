@@ -2,6 +2,8 @@ const Review = require('../models/Review');
 const Appointment = require('../models/Appointment');
 const Service = require('../models/Service');
 const Staff = require('../models/Staff');
+const ReviewReply = require('../models/ReviewReply');
+const User = require('../models/User');
 
 exports.createReview = async (req, res) => {
   try {
@@ -37,14 +39,21 @@ exports.createReview = async (req, res) => {
 
 exports.getReviews = async (req, res) => {
   try {
-    const reviews = await Review.findAll({
-      include: [Appointment, Service, Staff]
-    });
+const reviews = await Review.findAll({
+  include: [
+    Service,
+    Staff,
+    User,
+    { model: ReviewReply, include: [User] } // include replies + admin info
+  ]
+});
+
     return res.status(200).json({ reviews });
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
 
 exports.getMyReviews = async (req, res) => {
   try {
@@ -59,3 +68,25 @@ exports.getMyReviews = async (req, res) => {
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+exports.replyToReview = async (req, res) => {
+  try {
+    const { reviewId, reply } = req.body;
+    const adminId = req.user.id; // assuming JWT auth for admins
+
+    if (!reply) {
+      return res.status(400).json({ message: 'Reply cannot be empty' });
+    }
+
+    const newReply = await ReviewReply.create({
+      reviewId,
+      reply,
+      adminId
+    });
+
+    return res.status(201).json({ message: 'Reply submitted successfully', reply: newReply });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+

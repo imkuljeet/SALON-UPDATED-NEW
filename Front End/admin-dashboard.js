@@ -520,6 +520,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.location.href = "login.html";
   });
 
+  document.getElementById("adminReviewsTile").addEventListener("click", () => {
+    window.location.href = "adminreviews.html";
+  });
+  
+
   // Initial load
   loadServices();
   loadStaff();

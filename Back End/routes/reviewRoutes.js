@@ -6,5 +6,6 @@ const authMiddleware = require('../middleware/auth'); // assuming you have JWT a
 router.post('/create', authMiddleware, reviewController.createReview);
 router.get('/all', authMiddleware, reviewController.getReviews);
 router.get('/my', authMiddleware, reviewController.getMyReviews);
+router.post('/reply', authMiddleware, reviewController.replyToReview);
 
 module.exports = router;

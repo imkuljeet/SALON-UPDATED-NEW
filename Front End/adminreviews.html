@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Reviews</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    .review-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      background-color: #fafafa;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+    }
+    .review-header {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .stars {
+      color: gold;
+      margin-bottom: 10px;
+    }
+    .reply-box {
+      margin-top: 10px;
+    }
+    .reply-box textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-bottom: 8px;
+    }
+    .reply-box button {
+      background-color: #007BFF;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .reply-box button:hover {
+      background-color: #0056b3;
+    }
+    .reply-item {
+      margin: 8px 0;
+      padding: 8px;
+      background-color: #eef;
+      border-radius: 4px;
+    }
+    .reply-item strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .reply-date {
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>All Customer Reviews</h1>
+  <div id="reviewsList"></div>
+
+  <script>
+    async function loadReviews() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Admin login required");
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        const res = await axios.get("http://localhost:3000/reviews/all", {
+          headers: { Authorization: token }
+        });
+        const reviews = res.data.reviews || [];
+        const list = document.getElementById("reviewsList");
+        list.innerHTML = "";
+
+        reviews.forEach(r => {
+          const stars = "⭐".repeat(r.rating);
+          const serviceName = r.Service ? r.Service.name : "Unknown Service";
+          const staffName = r.Staff ? r.Staff.name : "Unknown Staff";
+          const customerName = r.User ? r.User.fullname : "Unknown User";
+
+          const card = document.createElement("div");
+          card.className = "review-card";
+          card.innerHTML = `
+            <div class="review-header">${serviceName} with ${staffName}</div>
+            <div><strong>Customer:</strong> ${customerName}</div>
+            <div class="stars">${stars}</div>
+            <div><em>${r.comment || "No comment"}</em></div>
+            <div style="font-size:12px; color:#666;">Reviewed on ${new Date(r.createdAt).toLocaleDateString()}</div>
+            <div class="replies-section"></div>
+            <div class="reply-box">
+              <textarea placeholder="Write a reply..."></textarea>
+              <button>Reply</button>
+            </div>
+          `;
+          list.appendChild(card);
+
+          // Show existing replies
+          const repliesSection = card.querySelector(".replies-section");
+          if (r.ReviewReplies && r.ReviewReplies.length > 0) {
+            r.ReviewReplies.forEach(rep => {
+              const adminName = rep.User ? rep.User.fullname : "Admin";
+              const replyDiv = document.createElement("div");
+              replyDiv.className = "reply-item";
+              replyDiv.innerHTML = `
+                <strong>${adminName} replied:</strong>
+                <div>${rep.reply}</div>
+                <div class="reply-date">${new Date(rep.createdAt).toLocaleDateString()}</div>
+              `;
+              repliesSection.appendChild(replyDiv);
+            });
+          }
+
+          // Add reply functionality
+          const replyBtn = card.querySelector("button");
+          const replyText = card.querySelector("textarea");
+          replyBtn.addEventListener("click", async () => {
+            const replyMessage = replyText.value.trim();
+            if (!replyMessage) {
+              alert("Reply cannot be empty");
+              return;
+            }
+            try {
+              await axios.post("http://localhost:3000/reviews/reply", {
+                reviewId: r.id,
+                reply: replyMessage
+              }, { headers: { Authorization: token } });
+              alert("Reply submitted successfully!");
+              replyText.value = "";
+              // Reload reviews to show new reply
+              loadReviews();
+            } catch (err) {
+              alert("Failed to submit reply: " + (err.response?.data.message || err.message));
+            }
+          });
+        });
+      } catch (err) {
+        alert("Failed to load reviews: " + (err.response?.data.message || err.message));
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadReviews);
+  </script>
+</body>
+</html>
