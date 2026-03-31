@@ -4,16 +4,16 @@ const User = require('./User');
 const ServiceAvailability = require('./ServiceAvailability');
 
 const Appointment = sequelize.define('Appointment', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
-  },
+  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   status: {
     type: DataTypes.ENUM('pending', 'booked', 'completed', 'cancelled'),
     defaultValue: 'pending'
+  },
+  reminderSent: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   }
-  }, {
+}, {
   tableName: 'appointments',
   timestamps: true
 });

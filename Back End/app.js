@@ -38,6 +38,9 @@ app.use('/payment', paymentRoutes);
 Staff.belongsToMany(Service, { through: "StaffServices" });
 Service.belongsToMany(Staff, { through: "StaffServices" });
 
+// Start cron jobs
+require('./cronjobs');
+
 // sequelize.sync({ alter: true })
 sequelize.sync()
   .then(() => {
