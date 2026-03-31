@@ -17,31 +17,31 @@ document.addEventListener("DOMContentLoaded", async () => {
       );
       const services = response.data.services;
       const listBody = document.getElementById("serviceList");
+      const section = document.getElementById("serviceSection");
+
       listBody.innerHTML = "";
 
       if (!services || services.length === 0) {
-        listBody.innerHTML = `<tr><td colspan="4">No services listed yet.</td></tr>`;
+        section.style.display = "none"; // hide if empty
       } else {
+        section.style.display = "block"; // show if data exists
         services.forEach((service) => {
           const row = document.createElement("tr");
           row.innerHTML = `
-              <td>${service.name}</td>
-              <td>${service.description}</td>
-              <td>₹${service.price}</td>
-              <td>
-                <button class="editBtn">Edit</button>
-                <button class="deleteBtn">Delete</button>
-              </td>
-            `;
-
-          // Attach listeners for edit and delete
+            <td>${service.name}</td>
+            <td>${service.description}</td>
+            <td>₹${service.price}</td>
+            <td>
+              <button class="editBtn">Edit</button>
+              <button class="deleteBtn">Delete</button>
+            </td>
+          `;
           row
             .querySelector(".editBtn")
             .addEventListener("click", () => editService(service.id));
           row
             .querySelector(".deleteBtn")
             .addEventListener("click", () => deleteService(service.id));
-
           listBody.appendChild(row);
         });
       }
@@ -198,7 +198,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
   //--------
-
   // Load all staff and render them in a table
   async function loadStaff() {
     try {
@@ -210,11 +209,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       );
       const staffMembers = response.data.staff;
       const staffBody = document.getElementById("staffList");
+      const section = document.getElementById("staffSection");
+
       staffBody.innerHTML = "";
 
       if (!staffMembers || staffMembers.length === 0) {
-        staffBody.innerHTML = `<tr><td colspan="5">No staff members listed yet.</td></tr>`;
+        section.style.display = "none"; // hide if empty
       } else {
+        section.style.display = "block"; // show if data exists
         staffMembers.forEach((staff) => {
           const row = document.createElement("tr");
           row.innerHTML = `
@@ -228,7 +230,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           </td>
         `;
 
-          // Attach listeners for edit and delete
           row
             .querySelector(".editStaffBtn")
             .addEventListener("click", () => editStaff(staff.id));
@@ -379,6 +380,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   // -------------------------------------------------------------------------
+
+  // Load all staff availability and render them in a table
   async function loadAvailability() {
     try {
       const response = await axios.get(
@@ -387,10 +390,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           headers: { Authorization: token },
         }
       );
-
       const staffMembers = response.data.staff;
       const listBody = document.getElementById("availabilityList");
+      const section = document.getElementById("availabilitySection");
+
       listBody.innerHTML = "";
+
+      let hasAvailability = false;
 
       for (const staff of staffMembers) {
         const availabilityRes = await axios.get(
@@ -400,23 +406,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const availabilitySlots = availabilityRes.data.availability;
 
-        if (!availabilitySlots || availabilitySlots.length === 0) {
-          const row = document.createElement("tr");
-          row.innerHTML = `<td>${staff.name}</td><td colspan="4">No availability set</td>`;
-          listBody.appendChild(row);
-        } else {
+        if (availabilitySlots && availabilitySlots.length > 0) {
+          hasAvailability = true;
           availabilitySlots.forEach((slot) => {
             const row = document.createElement("tr");
             row.innerHTML = `
-              <td>${staff.name}</td>
-              <td>${slot.dayOfWeek}</td>
-              <td>${slot.startTime}</td>
-              <td>${slot.endTime}</td>
-              <td>
-                <button class="deleteAvailabilityBtn">Delete</button>
-              </td>
-            `;
+            <td>${staff.name}</td>
+            <td>${slot.dayOfWeek}</td>
+            <td>${slot.startTime}</td>
+            <td>${slot.endTime}</td>
+            <td>
+              <button class="editAvailabilityBtn">Edit</button>
+              <button class="deleteAvailabilityBtn">Delete</button>
+            </td>
+          `;
 
+            row
+              .querySelector(".editAvailabilityBtn")
+              .addEventListener("click", () => editAvailability(slot.id));
             row
               .querySelector(".deleteAvailabilityBtn")
               .addEventListener("click", () => deleteAvailability(slot.id));
@@ -425,6 +432,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           });
         }
       }
+
+      // Toggle section visibility
+      section.style.display = hasAvailability ? "block" : "none";
     } catch (error) {
       alert(
         "Failed to load availability: " +
