@@ -187,6 +187,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           e.target.reset();
           document.getElementById("staffFormContainer").style.display = "none";
           // Optionally reload staff list if you display it
+          loadStaff();
         } catch (error) {
           alert(
             "Failed to add staff: " +
@@ -368,6 +369,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("availabilityFormContainer").style.display =
         "none";
       // Optionally reload staff availability list
+      loadAvailability();
     } catch (error) {
       alert(
         "Failed to add availability: " +
@@ -375,6 +377,79 @@ document.addEventListener("DOMContentLoaded", async () => {
       );
     }
   };
+
+  // -------------------------------------------------------------------------
+  async function loadAvailability() {
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/staff/get-staff",
+        {
+          headers: { Authorization: token },
+        }
+      );
+
+      const staffMembers = response.data.staff;
+      const listBody = document.getElementById("availabilityList");
+      listBody.innerHTML = "";
+
+      for (const staff of staffMembers) {
+        const availabilityRes = await axios.get(
+          `http://localhost:3000/availability/${staff.id}`,
+          { headers: { Authorization: token } }
+        );
+
+        const availabilitySlots = availabilityRes.data.availability;
+
+        if (!availabilitySlots || availabilitySlots.length === 0) {
+          const row = document.createElement("tr");
+          row.innerHTML = `<td>${staff.name}</td><td colspan="4">No availability set</td>`;
+          listBody.appendChild(row);
+        } else {
+          availabilitySlots.forEach((slot) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${staff.name}</td>
+              <td>${slot.dayOfWeek}</td>
+              <td>${slot.startTime}</td>
+              <td>${slot.endTime}</td>
+              <td>
+                <button class="deleteAvailabilityBtn">Delete</button>
+              </td>
+            `;
+
+            row
+              .querySelector(".deleteAvailabilityBtn")
+              .addEventListener("click", () => deleteAvailability(slot.id));
+
+            listBody.appendChild(row);
+          });
+        }
+      }
+    } catch (error) {
+      alert(
+        "Failed to load availability: " +
+          (error.response?.data.message || error.message)
+      );
+    }
+  }
+
+  // Delete availability
+  async function deleteAvailability(id) {
+    if (!confirm("Are you sure you want to delete this availability slot?"))
+      return;
+    try {
+      await axios.delete(`http://localhost:3000/availability/delete/${id}`, {
+        headers: { Authorization: token },
+      });
+      alert("Availability deleted successfully");
+      loadAvailability();
+    } catch (error) {
+      alert(
+        "Failed to delete availability: " +
+          (error.response?.data.message || error.message)
+      );
+    }
+  }
 
   // Logout
   document.getElementById("logoutBtn").addEventListener("click", () => {
@@ -386,4 +461,5 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Initial load
   loadServices();
   loadStaff();
+  loadAvailability();
 });

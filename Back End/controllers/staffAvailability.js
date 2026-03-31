@@ -26,28 +26,6 @@ exports.getAvailability = async (req, res) => {
   }
 };
 
-// Edit availability
-exports.editAvailability = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { dayOfWeek, startTime, endTime } = req.body;
-
-    const availability = await StaffAvailability.findByPk(id);
-    if (!availability) {
-      return res.status(404).json({ message: 'Availability not found' });
-    }
-
-    availability.dayOfWeek = dayOfWeek || availability.dayOfWeek;
-    availability.startTime = startTime || availability.startTime;
-    availability.endTime = endTime || availability.endTime;
-
-    await availability.save();
-    return res.status(200).json({ message: 'Availability updated successfully', availability });
-  } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
-
 // Delete availability
 exports.deleteAvailability = async (req, res) => {
   try {
