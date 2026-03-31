@@ -6,26 +6,48 @@
   <title>Customer Dashboard</title>
 </head>
 <body>
-  <h2>Customer Dashboard</h2>
+  <h1>Customer Dashboard</h1>
   <p>Welcome! Use the options below.</p>
 
-  <!-- Simple buttons -->
   <button onclick="window.location.href='customer-profile.html'">Manage Profile</button>
   <button id="logoutBtn">Logout</button>
 
-  <script>
-    // Protect dashboard
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("You must be logged in to access the dashboard.");
-      window.location.href = "login.html";
-    }
+  <div id="customerDetails"></div>
 
-    // Logout
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      window.location.href = "login.html";
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You must be logged in to access the dashboard.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        const response = await axios.get("http://localhost:3000/customer/profile", {
+          headers: { Authorization: token }
+        });
+
+        const user = response.data.user;
+        const detailsDiv = document.getElementById("customerDetails");
+        detailsDiv.innerHTML = `
+          <h2>Welcome ${user.fullname}</h2>
+          <h3>Your Personal Profile Details</h3>
+          <p><strong>Email:</strong> ${user.email}</p>
+          <p><strong>Phone:</strong> ${user.phone}</p>
+          <p><strong>Preferences:</strong> ${user.Preference?.preferences || "None"}</p>
+        `;
+      } catch (error) {
+        alert("Failed to load customer details: " + (error.response?.data.message || error.message));
+      }
+
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        window.location.href = "login.html";
+      });
     });
   </script>
 </body>

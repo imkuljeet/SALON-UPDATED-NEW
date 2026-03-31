@@ -9,7 +9,7 @@ const Preferences = sequelize.define('Preferences', {
     primaryKey: true
   },
   preferences: {
-    type: DataTypes.TEXT,   // free-form text field
+    type: DataTypes.TEXT,   
     allowNull: true
   }
 }, {
@@ -17,7 +17,7 @@ const Preferences = sequelize.define('Preferences', {
   timestamps: true
 });
 
-// Associations
+
 User.hasOne(Preferences, { foreignKey: 'userId', onDelete: 'CASCADE' });
 Preferences.belongsTo(User, { foreignKey: 'userId' });
 

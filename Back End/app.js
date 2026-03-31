@@ -18,7 +18,8 @@ app.use(bodyParser.json());
 app.use('/user', userRoutes);
 app.use('/customer',customerRoutes);
 
-sequelize.sync({ alter: true })
+// sequelize.sync({ alter: true })
+sequelize.sync()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}`);
